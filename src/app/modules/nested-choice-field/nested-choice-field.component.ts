@@ -73,14 +73,14 @@ export class NestedChoiceFieldComponent
   ) {
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadData();
     this.searchControl.valueChanges
       .pipe(distinctUntilChanged(), pairwise())
       .subscribe(([oldValue, newValue]) => this.search(newValue));
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes.data?.currentValue) {
       this.loadData();
     }
@@ -89,22 +89,22 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  get label() {
+  get label(): string {
     return this.currentOption
       ? this.currentOption[this.labelKey]
       : this.placeholderSelect;
   }
 
-  get icon() {
+  get icon(): Icon {
     return this.currentOption
       ? this.parseIcon(this.currentOption[this.iconKey]) : this.parseIcon();
   }
 
-  get isOpen() {
+  get isOpen(): boolean {
     return !!this.popperRef;
   }
 
-  search(value: string) {
+  search(value: string): void {
     if (value) {
       this.flatChildren(this.originalData).then((allItems: Option[]) => {
         this.data = allItems
@@ -129,10 +129,11 @@ export class NestedChoiceFieldComponent
     });
   }
 
-  select($event: Event, option: Option) {
+  select($event: Event, option: Option): void {
     const selector = $event.target as HTMLElement;
-    console.log(selector);
-    if ($event) $event.stopPropagation();
+    if ($event) {
+      $event.stopPropagation();
+    }
     if (selector && !selector.classList.contains('has-child')) {
       this.currentOption = option;
       this.selectChange.emit(option);
@@ -140,7 +141,7 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  isActive(option: Option) {
+  isActive(option: Option): boolean {
     if (!this.currentOption) {
       return false;
     }
@@ -154,7 +155,7 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  open() {
+  open(): void {
     if (!this.isOpen) {
       this.opened.emit();
       this.updateVisibleOptions();
@@ -162,7 +163,7 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  openList($event: Event, childOption: HTMLElement) {
+  openList($event: Event, childOption: HTMLElement): void {
     const target = $event.target as HTMLElement;
     const option =
       target.tagName === 'MAT-ICON'
@@ -172,9 +173,13 @@ export class NestedChoiceFieldComponent
     const isOpen = childOption.classList.contains('opened');
     const childListHeight = childOption.offsetHeight;
 
-    if ($event) $event.stopPropagation();
+    if ($event) {
+      $event.stopPropagation();
+    }
     selectors.forEach(selector => {
-      if (!selector) return;
+      if (!selector) {
+        return;
+      }
       if (isOpen) {
         this.closeChildrenList(childOption);
         selector.classList.remove('opened');
@@ -196,8 +201,8 @@ export class NestedChoiceFieldComponent
       { type: null, path: null };
   }
 
-  private loadData() {
-    let COPT = this.currentOption && this.currentOption[this.idKey];
+  private loadData(): void {
+    const COPT = this.currentOption && this.currentOption[this.idKey];
     if (this.data) {
       this.originalData = [...this.data];
       this.flatChildren(this.data).then((allItems: Option[]) => {
@@ -211,15 +216,13 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  private createEmbeddedView() {
+  private createEmbeddedView(): void {
     const dropdownTpl = this.dropdown;
     const origin = this.origin?.nativeElement;
 
     if (dropdownTpl && origin) {
       this.view = this.vcr.createEmbeddedView(dropdownTpl);
       const dropdown = this.view.rootNodes[0];
-
-      console.log(dropdown);
 
       document.body.appendChild(dropdown);
 
@@ -239,7 +242,7 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  private close() {
+  private close(): void {
     this.closed.emit();
     this.searchControl.patchValue('');
     if (this.popperRef && this.view) {
@@ -250,7 +253,7 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  private handleClickOutside() {
+  private handleClickOutside(): void {
     fromEvent(document, 'click')
       .pipe(
         filter(($event: MouseEvent) => {
@@ -270,7 +273,7 @@ export class NestedChoiceFieldComponent
       });
   }
 
-  private updateVisibleOptions(amountChilds?: number) {
+  private updateVisibleOptions(amountChilds?: number): void {
     const size = Number.isInteger(amountChilds)
       ? this.visibleOptions + amountChilds
       : this.data.length;
@@ -282,7 +285,7 @@ export class NestedChoiceFieldComponent
         : this.originalVisibleOptions;
   }
 
-  private flatChildren(data: Option[]) {
+  private flatChildren(data: Option[]): Promise<Option[]> {
     return new Promise(resolve => {
       const allItems = [...data];
       const addOption = (option: Option) => {
@@ -306,7 +309,7 @@ export class NestedChoiceFieldComponent
     });
   }
 
-  private closeChildrenList(selector: HTMLElement | Element) {
+  private closeChildrenList(selector: HTMLElement | Element): void {
     if (selector) {
       selector.classList.remove('opened');
       Array.from(selector.children).forEach(child => {
@@ -317,9 +320,9 @@ export class NestedChoiceFieldComponent
     }
   }
 
-  private closeAllChildrenList() {
+  private closeAllChildrenList(): void {
     const selectors = document.querySelectorAll(
-      "div[data-instance='" + this.instance + "']"
+      'div[data-instance=\'' + this.instance + '\']'
     );
     Array.from(selectors).forEach(selector => {
       this.closeChildrenList(selector);
