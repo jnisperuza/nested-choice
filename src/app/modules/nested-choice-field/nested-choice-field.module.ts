@@ -9,7 +9,6 @@ import { SelectItemComponent } from './select-item/select-item.component';
 
 @NgModule({
   declarations: [
-
     NestedChoiceFieldComponent,
     SelectItemComponent
   ],
