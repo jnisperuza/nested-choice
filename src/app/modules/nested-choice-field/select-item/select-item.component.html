@@ -1,0 +1,60 @@
+<div
+  class="select-item"
+  *ngFor="let option of data; let $i = index"
+  [attr.data-id]="option.id"
+  [attr.data-level]="level || $i"
+  [attr.data-instance]="instance"
+  [class.active]="isActive(option)"
+  [class.has-child]="option?.children"
+  (click)="select($event, option)"
+>
+  <ng-template [ngIf]="!optionTpl">
+    <ng-template [ngIf]="!option?.children">
+      <span
+        [ngClass]="{ 'has-icon': parseIcon(option.icon).path }"
+        [attr.data-label]="option.label"
+        [style.paddingLeft.px]="(level || $i) * 14 || 7"
+      >
+        <img
+          *ngIf="parseIcon(option.icon).type === 'img'"
+          [attr.data-instance]="instance"
+          [src]="parseIcon(option.icon).path"
+        />
+        <mat-icon
+          *ngIf="parseIcon(option.icon).type === 'matIcon'"
+          [attr.data-instance]="instance"
+        >
+          {{ parseIcon(option.icon).path }}
+        </mat-icon>
+      </span>
+    </ng-template>
+
+    <ng-template [ngIf]="option?.children">
+      <span
+        [ngClass]="{ 'has-icon': parseIcon(option.icon).path }"
+        [attr.data-label]="option.label"
+        [style.paddingLeft.px]="(level || $i) * 14 || 7"
+        (click)="openList($event, childrenList)"
+      >
+        <mat-icon aria-hidden="false">arrow_drop_down</mat-icon>
+      </span>
+      <div class="child-list" [attr.data-parent-id]="option.id" #childrenList>
+        <select-item
+          *ngFor="let optionChild of option.children"
+          [data]="[optionChild]"
+          [instance]="instance"
+          [level]="$i + (level + 1)"
+          [isActive]="isActive"
+          [select]="select"
+          [openList]="openList"
+          [parseIcon]="parseIcon"
+        >
+        </select-item>
+      </div>
+    </ng-template>
+  </ng-template>
+
+  <ng-template
+    *ngTemplateOutlet="optionTpl; context: { $implicit: option }"
+  ></ng-template>
+</div>

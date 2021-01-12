@@ -1,0 +1,13 @@
+@mixin default-font() {
+  font-style: normal;
+  color: $dark-gray;
+  line-height: 1;
+  margin: 0px;
+}
+
+@mixin body-regular() {
+  @include default-font();
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+}

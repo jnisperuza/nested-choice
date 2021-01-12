@@ -1,0 +1,84 @@
+@mixin scroll-bar($shadow, $thumb, $track, $radius, $width) {
+  &::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px $shadow;
+    -webkit-box-shadow: inset 0 0 6px $shadow;
+    border-radius: radius;
+    background-color: $track;
+  }
+  &::-webkit-scrollbar {
+    width: $width - 2;
+    background-color: $track;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: $width;
+    box-shadow: inset 0 0 6px $shadow;
+    -webkit-box-shadow: inset 0 0 6px $shadow;
+    background-color: $thumb;
+  }
+}
+
+@mixin truncate() {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin line-clamp($line: 3) {
+  position: relative;
+  box-sizing: border-box;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $line;
+  text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+}
+
+@mixin display-flex(
+  $justify-content,
+  $align-items: stretch,
+  $flex-direction: row,
+  $flex-wrap: nowrap,
+  $align-content: flex-start
+) {
+  display: flex;
+  flex-direction: $flex-direction;
+  flex-wrap: $flex-wrap;
+  justify-content: $justify-content;
+  align-items: $align-items;
+  align-content: $align-content;
+}
+
+@mixin keyframes($animation-name) {
+  @-webkit-keyframes #{$animation-name} {
+    @content;
+  }
+  @-moz-keyframes #{$animation-name} {
+    @content;
+  }
+  @-ms-keyframes #{$animation-name} {
+    @content;
+  }
+  @-o-keyframes #{$animation-name} {
+    @content;
+  }
+  @keyframes #{$animation-name} {
+    @content;
+  }
+}
+
+@mixin animation($str) {
+  -webkit-animation: #{$str};
+  -moz-animation: #{$str};
+  -ms-animation: #{$str};
+  -o-animation: #{$str};
+  animation: #{$str};
+}
+
+@mixin noselect() {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

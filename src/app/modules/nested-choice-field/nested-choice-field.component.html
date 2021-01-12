@@ -1,0 +1,83 @@
+<div class="nested-choice-field">
+  <label *ngIf="labelText" [ngClass]="{ opened: isOpen }">
+    {{ labelText }}
+    <i *ngIf="required">*</i>
+  </label>
+  <button class="select-trigger" (click)="open()" #origin>
+    <div class="wrapper-select-trigger" [attr.data-instance]="instance">
+      <mat-icon aria-hidden="false">arrow_drop_down</mat-icon>
+      <span
+        class="selected"
+        [attr.data-label]="label"
+        [ngClass]="{ 'has-option': currentOption, 'has-icon': icon.path }"
+        [attr.data-instance]="instance"
+        *ngIf="searchbox === false"
+      >
+        <img
+          *ngIf="icon.type === 'img'"
+          [attr.data-instance]="instance"
+          [src]="icon.path"
+        />
+        <mat-icon
+          *ngIf="icon.type === 'matIcon'"
+          [attr.data-instance]="instance"
+        >
+          {{ icon.path }}
+        </mat-icon>
+      </span>
+      <ng-container *ngIf="searchbox !== false">
+        <ng-template [ngIf]="!isOpen" [ngIfElse]="searchTpl">
+          <span
+            class="selected"
+            [attr.data-label]="label"
+            [ngClass]="{ 'has-option': currentOption, 'has-icon': icon.path }"
+            [attr.data-instance]="instance"
+          >
+            <img
+              *ngIf="icon.type === 'img'"
+              [attr.data-instance]="instance"
+              [src]="icon.path"
+            />
+            <mat-icon
+              *ngIf="icon.type === 'matIcon'"
+              [attr.data-instance]="instance"
+            >
+              {{ icon.path }}
+            </mat-icon>
+          </span>
+        </ng-template>
+        <ng-template #searchTpl>
+          <input
+            autofocus
+            type="search"
+            [placeholder]="placeholderSearch"
+            [formControl]="searchControl"
+          />
+        </ng-template>
+      </ng-container>
+      <ng-template #dropdown>
+        <div class="select-menu">
+          <cdk-virtual-scroll-viewport
+            class="select-menu-inner"
+            itemSize="32"
+            [style.height.px]="visibleOptions * 32"
+          >
+            <div class="no-results-item" *ngIf="!data.length">
+              No results found
+            </div>
+            <select-item
+              *cdkVirtualFor="let option of data"
+              [data]="[option]"
+              [instance]="instance"
+              [isActive]="isActive.bind(this)"
+              [select]="select.bind(this)"
+              [openList]="openList.bind(this)"
+              [parseIcon]="parseIcon.bind(this)"
+            >
+            </select-item>
+          </cdk-virtual-scroll-viewport>
+        </div>
+      </ng-template>
+    </div>
+  </button>
+</div>
