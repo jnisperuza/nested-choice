@@ -24,14 +24,10 @@ div.nested-choice-field {
   }
 
   .placeholder-class {
-    // @include body-regular();
-    // font-style: italic;
-    // height: 18px;
     color: $place-holder-color;
   }
 
   > label {
-    // @include body-medium();
     @include truncate();
     display: block;
     color: rgba(0, 0, 0, 0.54);
@@ -98,7 +94,6 @@ div.nested-choice-field {
       }
 
       &.has-option {
-        // @include body-regular();
         color: $gray-5;
       }
 
@@ -130,7 +125,6 @@ div.nested-choice-field {
     }
 
     input {
-      // @include body-regular();
       color: $gray-5;
       border: none;
       width: 100%;
@@ -191,7 +185,6 @@ div.nested-choice-field {
           box-sizing: border-box;
           padding: 5px 7px;
           color: $gray-3;
-          // @include body-regular();
         }
       }
     }
