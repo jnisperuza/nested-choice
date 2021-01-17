@@ -13,7 +13,8 @@ import {
   SimpleChanges,
   ViewChild,
   ElementRef,
-  HostListener
+  HostListener,
+  HostBinding
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { fromEvent } from 'rxjs';
@@ -21,7 +22,8 @@ import {
   filter,
   takeUntil,
   distinctUntilChanged,
-  pairwise
+  pairwise,
+  debounceTime
 } from 'rxjs/operators';
 import { PopperRef, Option, Icon } from './nested-choice-field.models';
 
@@ -33,51 +35,64 @@ import { PopperRef, Option, Icon } from './nested-choice-field.models';
 export class NestedChoiceFieldComponent
   implements OnInit, OnChanges {
   @Input() labelKey = 'label';
-  @Input() iconKey = 'icon';
   @Input() idKey = 'id';
+  @Input() iconKey = 'icon';
   @Input() visibleOptions = 10;
   @Input() data: Option[] = [];
-  @Input() currentOption: Option;
+  @Input() currentOption: Option | number | string;
   @Input() optionTpl: TemplateRef<any>;
   @Input() required: boolean;
   @Input() searchbox: boolean;
   @Input() placeholderSearch: string;
   @Input() placeholderSelect: string;
   @Input() labelText: string;
+  @Input() width: string | number;
+  @Input() disabled: boolean;
+  @Input() hidden: boolean;
   @Output() selectChange = new EventEmitter();
   @Output() opened = new EventEmitter();
   @Output() closed = new EventEmitter();
 
+  @ViewChild('nestedChoiceField') nestedChoiceField: ElementRef;
   @ViewChild('origin') origin: ElementRef;
   @ViewChild('dropdown') dropdown: TemplateRef<any>;
 
-  to: any;
   instance = Math.floor(Math.random() * Date.now());
   searchControl: FormControl = new FormControl();
+  widthSelectMenu: number;
+  searching: boolean;
 
   private view: EmbeddedViewRef<any>;
   private originalData: Option[] = [];
   private originalVisibleOptions = 10;
   private popperRef: PopperRef;
 
+  @HostBinding('style.width') hostWidth: string;
   @HostListener('document:keydown.escape', ['$event']) onKeydownHandler(
     event: KeyboardEvent
   ) {
     this.close();
   }
+  @HostListener('window:resize', ['$event']) onResize() {
+    this.updateWidthSelectMenu();
+  }
 
   constructor(
     private vcr: ViewContainerRef,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef,
-  ) {
-  }
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
     this.searchControl.valueChanges
-      .pipe(distinctUntilChanged(), pairwise())
-      .subscribe(([oldValue, newValue]) => this.search(newValue));
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe({
+        next: value => {
+          this.searching = true;
+          setTimeout(() => this.search(value), 100);
+        }
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -87,12 +102,13 @@ export class NestedChoiceFieldComponent
     if (changes.visibleOptions?.isFirstChange) {
       this.originalVisibleOptions = changes.visibleOptions.currentValue;
     }
+    if (changes.width?.currentValue) {
+      this.updateWidthSelectMenu();
+    }
   }
 
   get label(): string {
-    return this.currentOption
-      ? this.currentOption[this.labelKey]
-      : this.placeholderSelect;
+    return this.currentOption && this.currentOption[this.labelKey];
   }
 
   get icon(): Icon {
@@ -113,12 +129,17 @@ export class NestedChoiceFieldComponent
             return item;
           })
           .filter(
-            (option: Option) =>
-              !option.isParent &&
-              option[this.labelKey].toLowerCase().includes(value.toLowerCase())
+            (option: Option, index: number) => {
+              if (allItems.length - 1 === index) {
+                this.searching = false;
+              }
+              return !option.isParent &&
+                option[this.labelKey].toLowerCase().includes(value.toLowerCase());
+            }
           );
       });
     } else {
+      this.searching = false;
       this.data = this.originalData;
       requestAnimationFrame(() => {
         this.closeAllChildrenList();
@@ -130,14 +151,16 @@ export class NestedChoiceFieldComponent
   }
 
   select($event: Event, option: Option): void {
-    const selector = $event.target as HTMLElement;
-    if ($event) {
-      $event.stopPropagation();
-    }
-    if (selector && !selector.classList.contains('has-child')) {
-      this.currentOption = option;
-      this.selectChange.emit(option);
-      this.close();
+    if (!option.disabled) {
+      const selector = $event.target as HTMLElement;
+      if ($event) {
+        $event.stopPropagation();
+      }
+      if (selector && !selector.classList.contains('has-child')) {
+        this.currentOption = option;
+        this.selectChange.emit(option);
+        this.close();
+      }
     }
   }
 
@@ -156,43 +179,46 @@ export class NestedChoiceFieldComponent
   }
 
   open(): void {
-    if (!this.isOpen) {
+    if (!this.isOpen && !this.disabled) {
       this.opened.emit();
       this.updateVisibleOptions();
+      this.updateWidthSelectMenu();
       this.createEmbeddedView();
     }
   }
 
   openList($event: Event, childOption: HTMLElement): void {
-    const target = $event.target as HTMLElement;
-    const option =
-      target.tagName === 'MAT-ICON'
-        ? (target.parentNode as HTMLElement)
-        : target;
-    const selectors = [option, childOption];
-    const isOpen = childOption.classList.contains('opened');
-    const childListHeight = childOption.offsetHeight;
+    if (!this.disabled) {
+      const target = $event.target as HTMLElement;
+      const option =
+        target.tagName === 'MAT-ICON'
+          ? (target.parentNode as HTMLElement)
+          : target;
+      const selectors = [option, childOption];
+      const isOpen = childOption.classList.contains('opened');
+      const childListHeight = childOption.offsetHeight;
 
-    if ($event) {
-      $event.stopPropagation();
+      if ($event) {
+        $event.stopPropagation();
+      }
+      selectors.forEach(selector => {
+        if (!selector) {
+          return;
+        }
+        if (isOpen) {
+          this.closeChildrenList(childOption);
+          selector.classList.remove('opened');
+        } else {
+          selector.classList.add('opened');
+        }
+      });
+
+      const amountChilds = !isOpen
+        ? Array.from(childOption.children).length
+        : (childListHeight / 32) * -1;
+
+      this.updateVisibleOptions(amountChilds);
     }
-    selectors.forEach(selector => {
-      if (!selector) {
-        return;
-      }
-      if (isOpen) {
-        this.closeChildrenList(childOption);
-        selector.classList.remove('opened');
-      } else {
-        selector.classList.add('opened');
-      }
-    });
-
-    const amountChilds = !isOpen
-      ? Array.from(childOption.children).length
-      : (childListHeight / 32) * -1;
-
-    this.updateVisibleOptions(amountChilds);
   }
 
   parseIcon(icon?: string): Icon {
@@ -201,14 +227,23 @@ export class NestedChoiceFieldComponent
       { type: null, path: null };
   }
 
+  mouseEnter(event: Event, label: string): void {
+    const option = event.target as HTMLElement;
+    if (!option.title) {
+      if (option.offsetWidth < (label.length / 10) * 100) {
+        option.title = label;
+      }
+    }
+  }
+
   private loadData(): void {
-    const COPT = this.currentOption && this.currentOption[this.idKey];
+    const COPT = this.currentOption instanceof Object ? this.currentOption[this.idKey] : String(this.currentOption);
     if (this.data) {
       this.originalData = [...this.data];
       this.flatChildren(this.data).then((allItems: Option[]) => {
         if (this.currentOption !== undefined) {
           this.currentOption = allItems.find(
-            currentOption => currentOption[this.idKey] === COPT
+            currentOption => String(currentOption[this.idKey]) === COPT
           );
         }
       });
@@ -231,7 +266,7 @@ export class NestedChoiceFieldComponent
         this.popperRef = {
           reference: origin,
           popper: dropdown,
-          destroy: function () {
+          destroy() {
             if (this?.popper) {
               this.popper.remove();
             }
@@ -326,6 +361,12 @@ export class NestedChoiceFieldComponent
     );
     Array.from(selectors).forEach(selector => {
       this.closeChildrenList(selector);
+    });
+  }
+
+  private updateWidthSelectMenu(): void {
+    requestAnimationFrame(() => {
+      this.widthSelectMenu = this.nestedChoiceField?.nativeElement?.offsetWidth;
     });
   }
 }

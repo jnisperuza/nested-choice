@@ -21,19 +21,19 @@ export class AppComponent {
           children: [
             {
               label: 'Home',
-              icon: 'home', // https://cdn2.iconfinder.com/data/icons/bitsies/128/Home-512.png
+              icon: 'home',
               id: 5
             },
             {
               label: 'Statistics',
-              icon: 'https://cdn3.iconfinder.com/data/icons/diagram_v2/PNG/96x96/diagram_v2-05.png',
+              icon: 'https://cdn4.iconfinder.com/data/icons/simplicio/128x128/piechart.png',
               id: 6
             }
           ]
         },
         {
           label: 'Human resources',
-          icon: '',
+          icon: 'https://cdn4.iconfinder.com/data/icons/top-search-7/128/_contact_book_contacts-_address_phonebook_human_list_profile_resources-256.png',
           id: 4
         }
       ]

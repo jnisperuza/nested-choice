@@ -1,46 +1,72 @@
 <div
   class="select-item"
   *ngFor="let option of data; let $i = index"
-  [attr.data-id]="option.id"
+  [attr.data-id]="option[idKey]"
   [attr.data-level]="level || $i"
   [attr.data-instance]="instance"
   [class.active]="isActive(option)"
   [class.has-child]="option?.children"
+  [class.disabled]="option?.disabled"
   (click)="select($event, option)"
 >
   <ng-template [ngIf]="!optionTpl">
     <ng-template [ngIf]="!option?.children">
       <span
-        [ngClass]="{ 'has-icon': parseIcon(option.icon).path }"
-        [attr.data-label]="option.label"
+        [class.has-icon]="parseIcon(option[iconKey]).path"
+        [attr.data-label]="option[labelKey]"
         [style.paddingLeft.px]="(level || $i) * 14 || 7"
+        (mouseenter)="mouseEnter($event, option[labelKey])"
       >
         <img
-          *ngIf="parseIcon(option.icon).type === 'img'"
+          class="icon"
+          *ngIf="parseIcon(option[iconKey]).type === 'img'"
           [attr.data-instance]="instance"
-          [src]="parseIcon(option.icon).path"
+          [src]="parseIcon(option[iconKey]).path"
         />
         <mat-icon
-          *ngIf="parseIcon(option.icon).type === 'matIcon'"
+          class="icon"
+          *ngIf="parseIcon(option[iconKey]).type === 'matIcon'"
           [attr.data-instance]="instance"
         >
-          {{ parseIcon(option.icon).path }}
+          {{ parseIcon(option[iconKey]).path }}
         </mat-icon>
       </span>
     </ng-template>
 
     <ng-template [ngIf]="option?.children">
       <span
-        [ngClass]="{ 'has-icon': parseIcon(option.icon).path }"
-        [attr.data-label]="option.label"
+        class="has-child"
+        [class.has-icon]="parseIcon(option[iconKey]).path"
+        [attr.data-label]="option[labelKey]"
         [style.paddingLeft.px]="(level || $i) * 14 || 7"
         (click)="openList($event, childrenList)"
+        (mouseenter)="mouseEnter($event, option[labelKey])"
       >
         <mat-icon aria-hidden="false">arrow_drop_down</mat-icon>
+        <img
+          class="icon"
+          *ngIf="parseIcon(option[iconKey]).type === 'img'"
+          [attr.data-instance]="instance"
+          [src]="parseIcon(option[iconKey]).path"
+        />
+        <mat-icon
+          class="icon"
+          *ngIf="parseIcon(option[iconKey]).type === 'matIcon'"
+          [attr.data-instance]="instance"
+        >
+          {{ parseIcon(option[iconKey]).path }}
+        </mat-icon>
       </span>
-      <div class="child-list" [attr.data-parent-id]="option.id" #childrenList>
+      <div
+        class="child-list"
+        [attr.data-parent-id]="option[idKey]"
+        #childrenList
+      >
         <select-item
           *ngFor="let optionChild of option.children"
+          [idKey]="idKey"
+          [labelKey]="labelKey"
+          [iconKey]="iconKey"
           [data]="[optionChild]"
           [instance]="instance"
           [level]="$i + (level + 1)"
@@ -48,6 +74,7 @@
           [select]="select"
           [openList]="openList"
           [parseIcon]="parseIcon"
+          [mouseEnter]="mouseEnter"
         >
         </select-item>
       </div>

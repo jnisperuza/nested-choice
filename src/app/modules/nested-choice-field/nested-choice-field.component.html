@@ -1,37 +1,30 @@
-<div class="nested-choice-field">
-  <label *ngIf="labelText" [ngClass]="{ opened: isOpen }">
-    {{ labelText }}
-    <i *ngIf="required">*</i>
-  </label>
+<div #nestedChoiceField class="nested-choice-field">
   <button class="select-trigger" (click)="open()" #origin>
+    <label
+      *ngIf="labelText"
+      [attr.data-instance]="instance"
+      [class.opened]="isOpen"
+      [class.has-option]="currentOption"
+    >
+      {{ labelText }}
+      <i *ngIf="required">*</i>
+    </label>
     <div class="wrapper-select-trigger" [attr.data-instance]="instance">
+      <mat-spinner
+        *ngIf="searching"
+        color="accent"
+        [diameter]="25"
+      ></mat-spinner>
       <mat-icon aria-hidden="false">arrow_drop_down</mat-icon>
-      <span
-        class="selected"
-        [attr.data-label]="label"
-        [ngClass]="{ 'has-option': currentOption, 'has-icon': icon.path }"
-        [attr.data-instance]="instance"
-        *ngIf="searchbox === false"
-      >
-        <img
-          *ngIf="icon.type === 'img'"
-          [attr.data-instance]="instance"
-          [src]="icon.path"
-        />
-        <mat-icon
-          *ngIf="icon.type === 'matIcon'"
-          [attr.data-instance]="instance"
-        >
-          {{ icon.path }}
-        </mat-icon>
-      </span>
       <ng-container *ngIf="searchbox !== false">
         <ng-template [ngIf]="!isOpen" [ngIfElse]="searchTpl">
           <span
+            *ngIf="currentOption"
             class="selected"
             [attr.data-label]="label"
-            [ngClass]="{ 'has-option': currentOption, 'has-icon': icon.path }"
+            [class.has-icon]="icon.path"
             [attr.data-instance]="instance"
+            (mouseenter)="mouseEnter($event, label)"
           >
             <img
               *ngIf="icon.type === 'img'"
@@ -56,7 +49,7 @@
         </ng-template>
       </ng-container>
       <ng-template #dropdown>
-        <div class="select-menu">
+        <div class="select-menu" [style.width.px]="widthSelectMenu">
           <cdk-virtual-scroll-viewport
             class="select-menu-inner"
             itemSize="32"
@@ -67,12 +60,16 @@
             </div>
             <select-item
               *cdkVirtualFor="let option of data"
+              [idKey]="idKey"
+              [labelKey]="labelKey"
+              [iconKey]="iconKey"
               [data]="[option]"
               [instance]="instance"
               [isActive]="isActive.bind(this)"
               [select]="select.bind(this)"
               [openList]="openList.bind(this)"
               [parseIcon]="parseIcon.bind(this)"
+              [mouseEnter]="mouseEnter.bind(this)"
             >
             </select-item>
           </cdk-virtual-scroll-viewport>
