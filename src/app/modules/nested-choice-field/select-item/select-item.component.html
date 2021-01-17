@@ -5,7 +5,7 @@
   [attr.data-level]="level || $i"
   [attr.data-instance]="instance"
   [class.active]="isActive(option)"
-  [class.has-child]="option?.children"
+  [class.has-child]="option?.children && !optionTpl"
   [class.disabled]="option?.disabled"
   (click)="select($event, option)"
 >
@@ -70,6 +70,7 @@
           [data]="[optionChild]"
           [instance]="instance"
           [level]="$i + (level + 1)"
+          [optionTpl]="optionTpl"
           [isActive]="isActive"
           [select]="select"
           [openList]="openList"

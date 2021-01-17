@@ -22,5 +22,5 @@ export class SelectItemComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() { }
+  ngOnInit(): void { }
 }

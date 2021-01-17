@@ -56,7 +56,7 @@
             [style.height.px]="visibleOptions * 32"
           >
             <div class="no-results-item" *ngIf="!data.length">
-              No results found
+              {{ textNoOptions }}
             </div>
             <select-item
               *cdkVirtualFor="let option of data"
@@ -65,6 +65,7 @@
               [iconKey]="iconKey"
               [data]="[option]"
               [instance]="instance"
+              [optionTpl]="optionTpl"
               [isActive]="isActive.bind(this)"
               [select]="select.bind(this)"
               [openList]="openList.bind(this)"

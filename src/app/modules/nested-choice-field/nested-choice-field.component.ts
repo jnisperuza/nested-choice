@@ -22,7 +22,6 @@ import {
   filter,
   takeUntil,
   distinctUntilChanged,
-  pairwise,
   debounceTime
 } from 'rxjs/operators';
 import { PopperRef, Option, Icon } from './nested-choice-field.models';
@@ -43,8 +42,8 @@ export class NestedChoiceFieldComponent
   @Input() optionTpl: TemplateRef<any>;
   @Input() required: boolean;
   @Input() searchbox: boolean;
-  @Input() placeholderSearch: string;
-  @Input() placeholderSelect: string;
+  @Input() placeholderSearch = 'Search';
+  @Input() textNoOptions = 'No options';
   @Input() labelText: string;
   @Input() width: string | number;
   @Input() disabled: boolean;
