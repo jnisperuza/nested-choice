@@ -27,7 +27,7 @@ export class AppComponent {
                 id: 5
               },
               {
-                label: 'Statistics',
+                label: 'Státistics',
                 icon: 'https://cdn4.iconfinder.com/data/icons/simplicio/128x128/piechart.png',
                 id: 6
               }

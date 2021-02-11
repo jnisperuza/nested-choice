@@ -140,7 +140,8 @@ export class NestedChoiceFieldComponent
                 this.searching = false;
               }
               return !option.isParent &&
-                option[this.labelKey].toLowerCase().includes(value.toLowerCase());
+                this.sanitizeStresses(option[this.labelKey].toLowerCase())
+                  .includes(this.sanitizeStresses(value.toLowerCase()));
             }
           );
       });
@@ -265,6 +266,10 @@ export class NestedChoiceFieldComponent
     if (dropdownTpl && origin) {
       this.view = this.vcr.createEmbeddedView(dropdownTpl);
       const dropdown = this.view.rootNodes[0];
+      const boundingOrigin = origin.getBoundingClientRect();
+
+      dropdown.style.top = `${boundingOrigin.top}px`;
+      dropdown.style.left = `${boundingOrigin.left}px`;
 
       this.zone.runOutsideAngular(() => {
         origin.appendChild(dropdown);
@@ -392,5 +397,11 @@ export class NestedChoiceFieldComponent
         }
       }
     });
+  }
+
+  private sanitizeStresses(value: string): string {
+    if (typeof value === 'string') {
+      return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
   }
 }
