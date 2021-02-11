@@ -17,7 +17,7 @@ import {
   HostBinding
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { fromEvent } from 'rxjs';
+import { fromEvent, interval, Subscription } from 'rxjs';
 import {
   filter,
   takeUntil,
@@ -65,6 +65,9 @@ export class NestedChoiceFieldComponent
   private originalData: Option[] = [];
   private originalVisibleOptions = 10;
   private popperRef: PopperRef;
+  private interval = interval(100);
+  private intervalSub: Subscription;
+  private lastBounding: any;
 
   @HostBinding('style.width') hostWidth: string;
   @HostListener('document:keydown.escape', ['$event']) onKeydownHandler(
@@ -79,11 +82,11 @@ export class NestedChoiceFieldComponent
   constructor(
     private vcr: ViewContainerRef,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ref: ElementRef
   ) { }
 
   ngOnInit(): void {
-    this.loadData();
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe({
@@ -92,6 +95,10 @@ export class NestedChoiceFieldComponent
           setTimeout(() => this.search(value), 100);
         }
       });
+
+    if (this.data?.length) {
+      this.loadData();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -183,6 +190,7 @@ export class NestedChoiceFieldComponent
       this.updateVisibleOptions();
       this.updateWidthSelectMenu();
       this.createEmbeddedView();
+      this.watchElementChanges();
     }
   }
 
@@ -258,8 +266,6 @@ export class NestedChoiceFieldComponent
       this.view = this.vcr.createEmbeddedView(dropdownTpl);
       const dropdown = this.view.rootNodes[0];
 
-      document.body.appendChild(dropdown);
-
       this.zone.runOutsideAngular(() => {
         origin.appendChild(dropdown);
         this.popperRef = {
@@ -284,6 +290,11 @@ export class NestedChoiceFieldComponent
       this.view.destroy();
       this.view = null;
       this.popperRef = null;
+      this.lastBounding = null;
+    }
+    if (this.intervalSub) {
+      this.intervalSub.unsubscribe();
+      this.intervalSub = undefined;
     }
   }
 
@@ -366,6 +377,20 @@ export class NestedChoiceFieldComponent
   private updateWidthSelectMenu(): void {
     requestAnimationFrame(() => {
       this.widthSelectMenu = this.nestedChoiceField?.nativeElement?.offsetWidth;
+    });
+  }
+
+  private watchElementChanges(): void {
+    this.intervalSub = this.interval.subscribe(() => {
+      if (this.popperRef && this.view) {
+        const bounding = this.ref.nativeElement.getBoundingClientRect();
+        if (!this.lastBounding) {
+          this.lastBounding = bounding;
+        }
+        if (bounding.top !== this.lastBounding.top) {
+          this.close();
+        }
+      }
     });
   }
 }
